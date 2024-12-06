@@ -8,6 +8,6 @@ type Article struct {
 	ImageURL    string `json:"image_url"`
 	PublishedAt string `json:"published_at"`
 	Username      string    `json:"username"`
-	CategoryID  int    `json:"category_id"`
+	CategoryNAME  string    `json:"category_name"`
 	
 }

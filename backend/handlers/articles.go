@@ -200,19 +200,19 @@ func CreateArticle(w http.ResponseWriter, r *http.Request) {
     log.Printf("Decoded article: %+v\n", article)
 
     // Validation des champs
-    if article.Title == "" || article.Content == "" || article.Username == "" || article.CategoryID == 0 {
+    if article.Title == "" || article.Content == "" || article.Username == "" || article.CategoryNAME == "" {
         log.Println("Missing required fields in the request")
         http.Error(w, "Missing required fields", http.StatusBadRequest)
         return
     }
 
     // Log avant l'exécution de la requête SQL
-    log.Println("Preparing to execute query:", "INSERT INTO articles (title, content, image_url, published_at, username, category_id) VALUES ($1, $2, $3, $4, $5, $6)")
+    log.Println("Preparing to execute query:", "INSERT INTO articles (title, content, image_url, published_at, username, category_name) VALUES ($1, $2, $3, $4, $5, $6)")
 
     // Insertion dans la base de données
     var id int
-    err = config.DB.QueryRow("INSERT INTO articles (title, content, image_url, published_at, username, category_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id", 
-                              article.Title, article.Content, article.ImageURL, article.PublishedAt, article.Username, article.CategoryID).Scan(&id)
+    err = config.DB.QueryRow("INSERT INTO articles (title, content, image_url, published_at, username, category_name) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id", 
+                              article.Title, article.Content, article.ImageURL, article.PublishedAt, article.Username, article.CategoryNAME).Scan(&id)
     if err != nil {
         log.Printf("Error executing query: %v\n", err) // Log détaillé de l'erreur
         http.Error(w, "Error creating article: "+err.Error(), http.StatusInternalServerError)
@@ -239,7 +239,7 @@ func CreateArticle(w http.ResponseWriter, r *http.Request) {
 // Fonction pour récupérer les articles
 func GetArticles(w http.ResponseWriter, r *http.Request) {
 	// Exécuter la requête pour récupérer les articles depuis la base de données
-	rows, err := config.DB.Query("SELECT id, title, content, image_url, published_at, username, category_id  FROM articles")
+	rows, err := config.DB.Query("SELECT id, title, content, image_url, published_at, username, category_name  FROM articles")
 	if err != nil {
 		log.Println("Error retrieving articles:", err)
 		http.Error(w, "Error retrieving articles", http.StatusInternalServerError)
@@ -251,7 +251,7 @@ func GetArticles(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var article models.Article
 		// Scanner les résultats de la requête dans l'objet Article
-		if err := rows.Scan(&article.ID, &article.Title, &article.Content, &article.ImageURL, &article.PublishedAt, &article.Username, &article.CategoryID,); err != nil {
+		if err := rows.Scan(&article.ID, &article.Title, &article.Content, &article.ImageURL, &article.PublishedAt, &article.Username, &article.CategoryNAME,); err != nil {
 			log.Println("Error scanning row:", err)
 			http.Error(w, "Error processing article data", http.StatusInternalServerError)
 			return
