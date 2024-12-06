@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"golang-backend/config"
 	"golang-backend/handlers"
-	"golang-backend/middleware"
+	
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 )
@@ -23,7 +23,7 @@ func main() {
 	r.HandleFunc("/api/articles", handlers.GetArticles).Methods("GET")
 
 	// Appliquer le middleware JWT à CreateArticle
-	r.Handle("/api/articles", middleware.JWTAuth(http.HandlerFunc(handlers.CreateArticle))).Methods("POST")
+	r.HandleFunc("/api/articles", handlers.CreateArticle).Methods("POST")
 
 	// Routes pour l'authentification
 	r.HandleFunc("/api/auth/signup", handlers.SignupHandler).Methods("POST")

@@ -206,19 +206,16 @@ func CreateArticle(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // Requête SQL corrigée
-    query := `INSERT INTO articles (title, content, image_url, published_at, user_id, category_id)
-              VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
-
-    // Log de la requête SQL
-    log.Println("Preparing to execute query:", query)
+    // Log avant l'exécution de la requête SQL
+    log.Println("Preparing to execute query:", "INSERT INTO articles (title, content, image_url, published_at, username, category_id) VALUES ($1, $2, $3, $4, $5, $6)")
 
     // Insertion dans la base de données
     var id int
-    err = config.DB.QueryRow(query, article.Title, article.Content, article.ImageURL, article.PublishedAt, article.Username, article.CategoryID).Scan(&id)
+    err = config.DB.QueryRow("INSERT INTO articles (title, content, image_url, published_at, username, category_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id", 
+                              article.Title, article.Content, article.ImageURL, article.PublishedAt, article.Username, article.CategoryID).Scan(&id)
     if err != nil {
-        log.Println("Error inserting article into database:", err)
-        http.Error(w, "Error creating article", http.StatusInternalServerError)
+        log.Printf("Error executing query: %v\n", err) // Log détaillé de l'erreur
+        http.Error(w, "Error creating article: "+err.Error(), http.StatusInternalServerError)
         return
     }
 
@@ -238,10 +235,11 @@ func CreateArticle(w http.ResponseWriter, r *http.Request) {
 }
 
 
+
 // Fonction pour récupérer les articles
 func GetArticles(w http.ResponseWriter, r *http.Request) {
 	// Exécuter la requête pour récupérer les articles depuis la base de données
-	rows, err := config.DB.Query("SELECT id, title, content, image_url, published_at, user_id, category_id  FROM articles")
+	rows, err := config.DB.Query("SELECT id, title, content, image_url, published_at, username, category_id  FROM articles")
 	if err != nil {
 		log.Println("Error retrieving articles:", err)
 		http.Error(w, "Error retrieving articles", http.StatusInternalServerError)
